@@ -2,7 +2,7 @@ import { app, ipcMain, Tray, Menu, nativeImage } from 'electron'
 import { join } from 'path'
 import { readFileSync, existsSync } from 'fs'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
-import { IPC, StartSessionPayload, TickPayload } from '../shared/types'
+import { IPC, StartSessionPayload, TickPayload, BlockSuggestion } from '../shared/types'
 import { createSetupWindow, createOverlayWindows } from './windows'
 import { startTimer, stopTimer } from './timer'
 import { startAppWatcher, stopAppWatcher } from './app-watcher'
@@ -132,6 +132,63 @@ app.whenReady().then(() => {
 
   ipcMain.on(IPC.STOP_SESSION, () => {
     endSession()
+  })
+
+  ipcMain.handle(IPC.GET_BLOCK_SUGGESTIONS, (): BlockSuggestion[] => {
+    return [
+      // Individual apps
+      { type: 'app', name: 'Mail', icon: '📧', bundleId: 'com.apple.mail' },
+      { type: 'app', name: 'Messages', icon: '💬', bundleId: 'com.apple.MobileSMS' },
+      { type: 'app', name: 'Slack', icon: '💼', bundleId: 'com.tinyspeck.slackmacgap' },
+      { type: 'app', name: 'Discord', icon: '🎮', bundleId: 'com.hnc.Discord' },
+      { type: 'app', name: 'WhatsApp', icon: '📱', bundleId: 'net.whatsapp.WhatsApp' },
+      { type: 'app', name: 'Telegram', icon: '✈️', bundleId: 'ru.keepcoder.Telegram' },
+      { type: 'app', name: 'Twitter', icon: '🐦', bundleId: 'com.twitter.twitter-mac' },
+      { type: 'app', name: 'Safari', icon: '🧭', bundleId: 'com.apple.Safari' },
+      { type: 'app', name: 'Chrome', icon: '🌐', bundleId: 'com.google.Chrome' },
+      { type: 'app', name: 'YouTube', icon: '▶️', bundleId: 'com.google.Chrome' },
+      // Categories
+      {
+        type: 'category', name: 'Gaming', icon: '🎮',
+        apps: [
+          { name: 'Steam', bundleId: 'com.valvesoftware.steam' },
+          { name: 'Epic Games', bundleId: 'com.epicgames.EpicGamesLauncher' }
+        ]
+      },
+      {
+        type: 'category', name: 'Messaging', icon: '💬',
+        apps: [
+          { name: 'Messages', bundleId: 'com.apple.MobileSMS' },
+          { name: 'Slack', bundleId: 'com.tinyspeck.slackmacgap' },
+          { name: 'Discord', bundleId: 'com.hnc.Discord' },
+          { name: 'WhatsApp', bundleId: 'net.whatsapp.WhatsApp' },
+          { name: 'Telegram', bundleId: 'ru.keepcoder.Telegram' }
+        ]
+      },
+      {
+        type: 'category', name: 'News', icon: '📰',
+        apps: [
+          { name: 'News', bundleId: 'com.apple.news' },
+          { name: 'Reeder', bundleId: 'com.reederapp.5.macOS' }
+        ]
+      },
+      {
+        type: 'category', name: 'Shopping', icon: '🛒',
+        apps: [
+          { name: 'Amazon', bundleId: 'com.amazon.Amazon' }
+        ]
+      },
+      {
+        type: 'category', name: 'Social', icon: '👥',
+        apps: [
+          { name: 'Twitter', bundleId: 'com.twitter.twitter-mac' },
+          { name: 'Facebook', bundleId: 'com.facebook.Facebook' },
+          { name: 'Instagram', bundleId: 'com.instagram.Instagram' },
+          { name: 'Reddit', bundleId: 'com.reddit.Reddit' },
+          { name: 'TikTok', bundleId: 'com.zhiliaoapp.musically' }
+        ]
+      }
+    ]
   })
 
   app.on('activate', () => {

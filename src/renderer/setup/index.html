@@ -2,10 +2,39 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Focus App</title>
+    <title>Focus</title>
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body, #root {
+        height: 100%;
+        background: transparent;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+        color: #1d1d1f;
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+      }
+      body {
+        overflow: hidden;
+      }
+      /* Draggable title bar region */
+      .drag-region {
+        -webkit-app-region: drag;
+        height: 52px;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 100;
+      }
+      /* Make interactive elements non-draggable */
+      input, textarea, button, select, [data-no-drag] {
+        -webkit-app-region: no-drag;
+      }
+    </style>
   </head>
   <body>
+    <div class="drag-region"></div>
     <div id="root"></div>
     <script type="module" src="./main.tsx"></script>
   </body>

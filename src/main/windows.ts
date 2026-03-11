@@ -4,10 +4,18 @@ import { is } from '@electron-toolkit/utils'
 
 export function createSetupWindow(isQuitting: () => boolean): BrowserWindow {
   const win = new BrowserWindow({
-    width: 560,
-    height: 480,
-    resizable: false,
+    width: 640,
+    height: 520,
+    minWidth: 520,
+    minHeight: 420,
+    resizable: true,
     show: false,
+    titleBarStyle: 'hiddenInset',
+    vibrancy: 'sidebar',
+    visualEffectState: 'active',
+    backgroundColor: '#00000000',
+    transparent: false,
+    trafficLightPosition: { x: 16, y: 16 },
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/setup.js'),
