@@ -183,7 +183,7 @@ export default function App(): React.ReactElement {
                         style={styles.dropdownItem}
                         onClick={() => addItem(s)}
                         onMouseEnter={(e) => {
-                          ;(e.target as HTMLElement).style.background = 'rgba(0,0,0,0.06)'
+                          ;(e.target as HTMLElement).style.background = 'rgba(255,255,255,0.08)'
                         }}
                         onMouseLeave={(e) => {
                           ;(e.target as HTMLElement).style.background = 'transparent'
@@ -207,7 +207,7 @@ export default function App(): React.ReactElement {
                         style={styles.dropdownItem}
                         onClick={() => addItem(s)}
                         onMouseEnter={(e) => {
-                          ;(e.target as HTMLElement).style.background = 'rgba(0,0,0,0.06)'
+                          ;(e.target as HTMLElement).style.background = 'rgba(255,255,255,0.08)'
                         }}
                         onMouseLeave={(e) => {
                           ;(e.target as HTMLElement).style.background = 'transparent'
@@ -246,15 +246,29 @@ export default function App(): React.ReactElement {
   )
 }
 
+// Dark palette — matches native macOS dark mode
+const c = {
+  bg: '#2a2a2c',
+  surface: '#3a3a3c',        // raised inputs, controls
+  surfaceBorder: '#4a4a4c',  // subtle edge on inputs
+  text: '#e5e5e7',           // primary text — high contrast on dark
+  textSecondary: '#98989d',  // labels, hints
+  textTertiary: '#6e6e73',   // counts, disabled
+  chipBg: 'rgba(10,132,255,0.18)',  // system blue tint for chips
+  chipText: '#64b5f6',              // soft blue chip text
+  accent: '#30d158',         // macOS system green
+  divider: 'rgba(255,255,255,0.06)'
+}
+
 const styles: Record<string, React.CSSProperties> = {
   container: {
     display: 'flex',
     flexDirection: 'column',
     height: '100vh',
     fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif",
-    color: '#1d1d1f',
+    color: c.text,
     fontSize: 13,
-    background: 'transparent'
+    background: c.bg
   },
 
   content: {
@@ -278,7 +292,7 @@ const styles: Record<string, React.CSSProperties> = {
     paddingTop: 7,
     fontSize: 13,
     fontWeight: 400,
-    color: '#86868b',
+    color: c.textSecondary,
     textAlign: 'right'
   },
 
@@ -286,9 +300,9 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: '8px 10px',
     borderRadius: 6,
-    border: '1px solid rgba(0,0,0,0.12)',
-    background: 'rgba(255,255,255,0.65)',
-    color: '#1d1d1f',
+    border: `1px solid ${c.surfaceBorder}`,
+    background: c.surface,
+    color: c.text,
     fontSize: 13,
     fontFamily: 'inherit',
     outline: 'none',
@@ -300,9 +314,9 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: '6px 8px',
     borderRadius: 6,
-    border: '1px solid rgba(0,0,0,0.12)',
-    background: 'rgba(255,255,255,0.65)',
-    color: '#1d1d1f',
+    border: `1px solid ${c.surfaceBorder}`,
+    background: c.surface,
+    color: c.text,
     fontSize: 13,
     fontFamily: 'inherit',
     outline: 'none',
@@ -314,15 +328,15 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'inline-flex',
     borderRadius: 6,
     overflow: 'hidden',
-    border: '1px solid rgba(0,0,0,0.12)',
-    background: 'rgba(0,0,0,0.04)'
+    border: `1px solid ${c.surfaceBorder}`,
+    background: c.surface
   },
 
   segmentBtn: {
     padding: '5px 16px',
     border: 'none',
     background: 'transparent',
-    color: '#86868b',
+    color: c.textSecondary,
     fontSize: 13,
     fontFamily: 'inherit',
     fontWeight: 500,
@@ -331,9 +345,9 @@ const styles: Record<string, React.CSSProperties> = {
   },
 
   segmentBtnActive: {
-    background: 'rgba(255,255,255,0.85)',
-    color: '#1d1d1f',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.08)'
+    background: '#515154',
+    color: c.text,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
   },
 
   chipInputWrapper: {
@@ -347,8 +361,8 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 4,
     padding: '5px 8px',
     borderRadius: 6,
-    border: '1px solid rgba(0,0,0,0.12)',
-    background: 'rgba(255,255,255,0.65)',
+    border: `1px solid ${c.surfaceBorder}`,
+    background: c.surface,
     minHeight: 32,
     alignItems: 'center',
     cursor: 'text'
@@ -360,8 +374,8 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 4,
     padding: '2px 8px 2px 6px',
     borderRadius: 4,
-    background: 'rgba(0,122,255,0.12)',
-    color: '#007aff',
+    background: c.chipBg,
+    color: c.chipText,
     fontSize: 12,
     fontWeight: 500,
     whiteSpace: 'nowrap' as const
@@ -377,13 +391,14 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'center',
     border: 'none',
     background: 'none',
-    color: '#007aff',
+    color: c.chipText,
     fontSize: 14,
     cursor: 'pointer',
     padding: 0,
     marginLeft: 2,
     lineHeight: 1,
-    fontFamily: 'inherit'
+    fontFamily: 'inherit',
+    opacity: 0.6
   },
 
   chipSearchInput: {
@@ -392,7 +407,7 @@ const styles: Record<string, React.CSSProperties> = {
     outline: 'none',
     fontSize: 13,
     fontFamily: 'inherit',
-    color: '#1d1d1f',
+    color: c.text,
     flex: 1,
     minWidth: 80,
     padding: '2px 0'
@@ -403,12 +418,10 @@ const styles: Record<string, React.CSSProperties> = {
     top: 'calc(100% + 4px)',
     left: 0,
     right: 0,
-    background: 'rgba(255,255,255,0.95)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
+    background: '#323234',
     borderRadius: 8,
-    border: '1px solid rgba(0,0,0,0.1)',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+    border: `1px solid ${c.surfaceBorder}`,
+    boxShadow: '0 8px 30px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.2)',
     maxHeight: 240,
     overflowY: 'auto' as const,
     zIndex: 1000,
@@ -418,15 +431,16 @@ const styles: Record<string, React.CSSProperties> = {
   dropdownHeader: {
     padding: '8px 12px 4px',
     fontSize: 11,
-    fontWeight: 500,
-    color: '#86868b',
+    fontWeight: 600,
+    color: c.textTertiary,
     textTransform: 'uppercase' as const,
-    letterSpacing: '0.3px'
+    letterSpacing: '0.4px'
   },
 
   dropdownCount: {
-    color: '#aeaeb2',
-    fontWeight: 400
+    color: c.textTertiary,
+    fontWeight: 400,
+    opacity: 0.6
   },
 
   dropdownItem: {
@@ -437,7 +451,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '7px 12px',
     border: 'none',
     background: 'transparent',
-    color: '#1d1d1f',
+    color: c.text,
     fontSize: 13,
     fontFamily: 'inherit',
     cursor: 'pointer',
@@ -457,7 +471,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px 32px 16px',
-    borderTop: '1px solid rgba(0,0,0,0.06)',
+    borderTop: `1px solid ${c.divider}`,
     background: 'transparent'
   },
 
@@ -465,17 +479,18 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '7px 20px',
     borderRadius: 6,
     border: 'none',
-    background: '#34c759',
+    background: c.accent,
     color: '#fff',
     fontSize: 13,
     fontWeight: 600,
     cursor: 'pointer',
     fontFamily: 'inherit',
-    transition: 'opacity 0.15s'
+    transition: 'opacity 0.15s',
+    letterSpacing: '-0.1px'
   },
 
   startBtnDisabled: {
-    opacity: 0.35,
+    opacity: 0.3,
     cursor: 'default'
   },
 
@@ -492,10 +507,10 @@ const styles: Record<string, React.CSSProperties> = {
     width: 22,
     height: 20,
     borderRadius: 4,
-    border: '1px solid rgba(0,0,0,0.12)',
-    background: 'rgba(255,255,255,0.6)',
+    border: `1px solid ${c.surfaceBorder}`,
+    background: c.surface,
     fontSize: 11,
-    color: '#86868b',
+    color: c.textSecondary,
     fontFamily: 'inherit'
   }
 }

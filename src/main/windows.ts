@@ -11,10 +11,7 @@ export function createSetupWindow(isQuitting: () => boolean): BrowserWindow {
     resizable: true,
     show: false,
     titleBarStyle: 'hiddenInset',
-    vibrancy: 'sidebar',
-    visualEffectState: 'active',
-    backgroundColor: '#00000000',
-    transparent: false,
+    backgroundColor: '#2a2a2c',
     trafficLightPosition: { x: 16, y: 16 },
     autoHideMenuBar: true,
     webPreferences: {
