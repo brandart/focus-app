@@ -2,7 +2,7 @@ import { app, ipcMain, Tray, Menu, nativeImage } from 'electron'
 import { join } from 'path'
 import { readFileSync, existsSync } from 'fs'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
-import { IPC, StartSessionPayload, TickPayload, BlockSuggestion } from '../shared/types'
+import { IPC, StartSessionPayload, TickPayload, BlockSuggestion, BorderSettings } from '../shared/types'
 import { createSetupWindow, createOverlayWindows } from './windows'
 import { startTimer, stopTimer } from './timer'
 import { startAppWatcher, stopAppWatcher } from './app-watcher'
@@ -116,6 +116,11 @@ app.whenReady().then(() => {
 
     if (isAlive(setupWin)) setupWin!.hide()
     overlayWins.forEach((w) => { if (isAlive(w)) w.show() })
+
+    // Send border settings to all overlays
+    overlayWins.forEach((w) => {
+      if (isAlive(w)) w.webContents.send(IPC.UPDATE_BORDER, payload.border)
+    })
 
     startAppWatcher(() => overlayWins.find((w) => isAlive(w)) ?? null, payload.blockedApps ?? [])
 

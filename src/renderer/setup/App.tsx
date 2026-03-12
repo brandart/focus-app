@@ -1,13 +1,42 @@
 import { useState, useEffect, useRef } from 'react'
-import type { SetupAPI, BlockSuggestion, BlockedApp } from '../../shared/types'
+import type { SetupAPI, BlockSuggestion, BlockedApp, BorderSettings } from '../../shared/types'
+import { DEFAULT_BORDER } from '../../shared/types'
 
 const api = (): SetupAPI => (window as unknown as { electronAPI: SetupAPI }).electronAPI
 
 const DURATION_OPTIONS = [15, 20, 25, 30, 40, 45, 60, 90, 120]
 
+const BORDER_COLORS = [
+  { label: 'Blue', value: '#5082dc' },
+  { label: 'Purple', value: '#8b5cf6' },
+  { label: 'Teal', value: '#14b8a6' },
+  { label: 'Green', value: '#30d158' },
+  { label: 'Orange', value: '#f59e0b' },
+  { label: 'Red', value: '#ef4444' },
+  { label: 'Pink', value: '#ec4899' }
+]
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const h = hex.replace('#', '')
+  return {
+    r: parseInt(h.substring(0, 2), 16),
+    g: parseInt(h.substring(2, 4), 16),
+    b: parseInt(h.substring(4, 6), 16)
+  }
+}
+
+function buildPreviewShadow(border: BorderSettings): string {
+  const { r, g, b } = hexToRgb(border.color)
+  const t = border.thickness
+  const solid = `inset 0 0 0 ${t}px rgba(${r}, ${g}, ${b}, 0.75)`
+  if (!border.glow) return solid
+  const glowSpread = Math.round(t * 4.5)
+  const glowBlur = Math.round(t * 13)
+  return `${solid}, inset 0 0 ${glowBlur}px ${glowSpread}px rgba(${r}, ${g}, ${b}, 0.35)`
+}
+
 interface SelectedItem {
   name: string
-  icon: string
   apps: BlockedApp[]
 }
 
@@ -19,6 +48,7 @@ export default function App(): React.ReactElement {
   const [suggestions, setSuggestions] = useState<BlockSuggestion[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
+  const [border, setBorder] = useState<BorderSettings>({ ...DEFAULT_BORDER })
   const searchRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -52,7 +82,6 @@ export default function App(): React.ReactElement {
   const addItem = (s: BlockSuggestion): void => {
     const item: SelectedItem = {
       name: s.name,
-      icon: s.icon,
       apps: s.type === 'category' ? s.apps! : [{ name: s.name, bundleId: s.bundleId! }]
     }
     setSelectedItems((prev) => [...prev, item])
@@ -71,7 +100,8 @@ export default function App(): React.ReactElement {
     api().startSession({
       durationMinutes,
       goal: goal.trim(),
-      blockedApps: allBlockedApps
+      blockedApps: allBlockedApps,
+      border
     })
   }
 
@@ -145,12 +175,8 @@ export default function App(): React.ReactElement {
             <div style={styles.chipInputInner}>
               {selectedItems.map((item) => (
                 <span key={item.name} style={styles.chip}>
-                  <span style={styles.chipIcon}>{item.icon}</span>
                   {item.name}
-                  <button
-                    style={styles.chipRemove}
-                    onClick={() => removeItem(item.name)}
-                  >
+                  <button style={styles.chipRemove} onClick={() => removeItem(item.name)}>
                     ×
                   </button>
                 </span>
@@ -174,8 +200,7 @@ export default function App(): React.ReactElement {
                 {categories.length > 0 && (
                   <>
                     <div style={styles.dropdownHeader}>
-                      Categories{' '}
-                      <span style={styles.dropdownCount}>{categories.length}</span>
+                      Categories <span style={styles.dropdownCount}>{categories.length}</span>
                     </div>
                     {categories.map((s) => (
                       <button
@@ -198,8 +223,7 @@ export default function App(): React.ReactElement {
                 {apps.length > 0 && (
                   <>
                     <div style={styles.dropdownHeader}>
-                      Apps{' '}
-                      <span style={styles.dropdownCount}>{apps.length}</span>
+                      Apps <span style={styles.dropdownCount}>{apps.length}</span>
                     </div>
                     {apps.map((s) => (
                       <button
@@ -220,6 +244,183 @@ export default function App(): React.ReactElement {
                   </>
                 )}
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Focus Border */}
+        <div style={styles.formRow}>
+          <label style={styles.formLabel}>Border</label>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Visible toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button
+                style={{
+                  ...styles.toggle,
+                  ...(border.visible ? styles.toggleOn : {})
+                }}
+                onClick={() => setBorder((b) => ({ ...b, visible: !b.visible }))}
+              >
+                <div
+                  style={{
+                    ...styles.toggleKnob,
+                    ...(border.visible ? styles.toggleKnobOn : {})
+                  }}
+                />
+              </button>
+              <span style={{ fontSize: 13, color: c.textSecondary }}>
+                {border.visible ? 'Visible' : 'Hidden'}
+              </span>
+            </div>
+
+            {border.visible && (
+              <>
+                {/* Color presets + custom picker */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {BORDER_COLORS.map((preset) => (
+                    <button
+                      key={preset.value}
+                      title={preset.label}
+                      onClick={() => setBorder((b) => ({ ...b, color: preset.value }))}
+                      style={{
+                        width: 22,
+                        height: 22,
+                        borderRadius: '50%',
+                        border:
+                          border.color === preset.value
+                            ? '2px solid #fff'
+                            : '2px solid transparent',
+                        background: preset.value,
+                        cursor: 'pointer',
+                        padding: 0,
+                        outline: 'none',
+                        boxShadow:
+                          border.color === preset.value ? `0 0 0 1px ${c.surfaceBorder}` : 'none',
+                        transition: 'border 0.15s, box-shadow 0.15s'
+                      }}
+                    />
+                  ))}
+                  <div style={{ position: 'relative', marginLeft: 4 }}>
+                    <input
+                      type="color"
+                      value={border.color}
+                      onChange={(e) => setBorder((b) => ({ ...b, color: e.target.value }))}
+                      style={
+                        {
+                          width: 22,
+                          height: 22,
+                          border: 'none',
+                          borderRadius: '50%',
+                          cursor: 'pointer',
+                          padding: 0,
+                          background: 'transparent',
+                          appearance: 'none',
+                          WebkitAppearance: 'none'
+                        } as React.CSSProperties
+                      }
+                      title="Custom color"
+                    />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        borderRadius: '50%',
+                        border: `2px solid ${c.surfaceBorder}`,
+                        pointerEvents: 'none',
+                        background: `conic-gradient(red, yellow, lime, aqua, blue, magenta, red)`,
+                        opacity: 0.85
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Thickness slider */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 12, color: c.textSecondary, minWidth: 60 }}>
+                    Thickness
+                  </span>
+                  <input
+                    type="range"
+                    min={1}
+                    max={8}
+                    step={1}
+                    value={border.thickness}
+                    onChange={(e) =>
+                      setBorder((b) => ({ ...b, thickness: Number(e.target.value) }))
+                    }
+                    style={{
+                      flex: 1,
+                      accentColor: border.color,
+                      cursor: 'pointer',
+                      height: 4
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: c.textTertiary,
+                      minWidth: 24,
+                      textAlign: 'right'
+                    }}
+                  >
+                    {border.thickness}px
+                  </span>
+                </div>
+
+                {/* Glow toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <button
+                    style={{
+                      ...styles.toggle,
+                      ...(border.glow ? styles.toggleOn : {})
+                    }}
+                    onClick={() => setBorder((b) => ({ ...b, glow: !b.glow }))}
+                  >
+                    <div
+                      style={{
+                        ...styles.toggleKnob,
+                        ...(border.glow ? styles.toggleKnobOn : {})
+                      }}
+                    />
+                  </button>
+                  <span style={{ fontSize: 13, color: c.textSecondary }}>Glow effect</span>
+                </div>
+
+                {/* Live preview */}
+                <div
+                  style={{
+                    height: 48,
+                    borderRadius: 6,
+                    background: '#1a1a1c',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      borderRadius: 6,
+                      boxShadow: buildPreviewShadow(border),
+                      transition: 'box-shadow 0.3s ease'
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 11,
+                      color: c.textTertiary,
+                      letterSpacing: '0.3px'
+                    }}
+                  >
+                    Preview
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -249,14 +450,14 @@ export default function App(): React.ReactElement {
 // Dark palette — matches native macOS dark mode
 const c = {
   bg: '#2a2a2c',
-  surface: '#3a3a3c',        // raised inputs, controls
-  surfaceBorder: '#4a4a4c',  // subtle edge on inputs
-  text: '#e5e5e7',           // primary text — high contrast on dark
-  textSecondary: '#98989d',  // labels, hints
-  textTertiary: '#6e6e73',   // counts, disabled
-  chipBg: 'rgba(10,132,255,0.18)',  // system blue tint for chips
-  chipText: '#64b5f6',              // soft blue chip text
-  accent: '#30d158',         // macOS system green
+  surface: '#3a3a3c', // raised inputs, controls
+  surfaceBorder: '#4a4a4c', // subtle edge on inputs
+  text: '#e5e5e7', // primary text — high contrast on dark
+  textSecondary: '#98989d', // labels, hints
+  textTertiary: '#6e6e73', // counts, disabled
+  chipBg: 'rgba(10,132,255,0.18)', // system blue tint for chips
+  chipText: '#64b5f6', // soft blue chip text
+  accent: '#30d158', // macOS system green
   divider: 'rgba(255,255,255,0.06)'
 }
 
@@ -385,6 +586,13 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 12
   },
 
+  chipIconImg: {
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+    objectFit: 'cover' as const
+  },
+
   chipRemove: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -466,6 +674,14 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'center' as const
   },
 
+  dropdownItemIconImg: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    objectFit: 'cover' as const,
+    flexShrink: 0
+  },
+
   bottomBar: {
     display: 'flex',
     alignItems: 'center',
@@ -512,5 +728,38 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 11,
     color: c.textSecondary,
     fontFamily: 'inherit'
+  },
+
+  toggle: {
+    position: 'relative' as const,
+    width: 36,
+    height: 20,
+    borderRadius: 10,
+    border: 'none',
+    background: c.surface,
+    cursor: 'pointer',
+    padding: 0,
+    transition: 'background 0.2s',
+    flexShrink: 0
+  },
+
+  toggleOn: {
+    background: c.accent
+  },
+
+  toggleKnob: {
+    position: 'absolute' as const,
+    top: 2,
+    left: 2,
+    width: 16,
+    height: 16,
+    borderRadius: '50%',
+    background: '#fff',
+    transition: 'left 0.2s',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+  },
+
+  toggleKnobOn: {
+    left: 18
   }
 }

@@ -18,25 +18,7 @@
         width: 100%;
         height: 100%;
       }
-      .focus-border {
-        box-shadow:
-          inset 0 0 0 3px rgba(80, 130, 220, 0.75),
-          inset 0 0 40px 14px rgba(80, 140, 255, 0.35);
-        animation: focus-glow 3.5s ease-in-out infinite;
-      }
-      @keyframes focus-glow {
-        0%,
-        100% {
-          box-shadow:
-            inset 0 0 0 3px rgba(80, 130, 220, 0.75),
-            inset 0 0 40px 14px rgba(80, 140, 255, 0.35);
-        }
-        50% {
-          box-shadow:
-            inset 0 0 0 4px rgba(80, 130, 220, 0.9),
-            inset 0 0 52px 18px rgba(80, 140, 255, 0.45);
-        }
-      }
+      /* Focus border styles are injected dynamically by the overlay app */
     </style>
   </head>
   <body>
