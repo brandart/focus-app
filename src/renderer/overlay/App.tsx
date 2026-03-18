@@ -19,26 +19,48 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   }
 }
 
+import type { GlowLevel, PulseLevel } from '../../shared/types'
+
+// Maps named glow levels to { blur, spread, solidAlpha, glowAlpha }
+const GLOW_MAP: Record<GlowLevel, { blur: number; spread: number; solidA: number; glowA: number }> =
+  {
+    none: { blur: 0, spread: 0, solidA: 0.6, glowA: 0 },
+    subtle: { blur: 20, spread: 6, solidA: 0.6, glowA: 0.12 },
+    soft: { blur: 35, spread: 12, solidA: 0.7, glowA: 0.25 },
+    medium: { blur: 45, spread: 16, solidA: 0.75, glowA: 0.32 },
+    bright: { blur: 55, spread: 20, solidA: 0.8, glowA: 0.4 },
+    intense: { blur: 70, spread: 26, solidA: 0.85, glowA: 0.5 }
+  }
+
+// Maps named pulse levels to animation duration in seconds (0 = no animation)
+const PULSE_MAP: Record<PulseLevel, number> = {
+  static: 0,
+  slow: 5.5,
+  calm: 3.5,
+  lively: 2.2,
+  fast: 1.4
+}
+
 function buildBorderShadow(border: BorderSettings): string {
   if (!border.visible) return 'none'
   const { r, g, b } = hexToRgb(border.color)
-  const t = border.thickness
-  const solid = `inset 0 0 0 ${t}px rgba(${r}, ${g}, ${b}, 0.75)`
-  if (!border.glow) return solid
-  const glowSpread = Math.round(t * 4.5)
-  const glowBlur = Math.round(t * 13)
-  return `${solid}, inset 0 0 ${glowBlur}px ${glowSpread}px rgba(${r}, ${g}, ${b}, 0.35)`
+  const g1 = GLOW_MAP[border.glow]
+  const solid = `inset 0 0 0 3px rgba(${r}, ${g}, ${b}, ${g1.solidA})`
+  if (g1.glowA === 0) return solid
+  return `${solid}, inset 0 0 ${g1.blur}px ${g1.spread}px rgba(${r}, ${g}, ${b}, ${g1.glowA})`
 }
 
 function buildPulseShadow(border: BorderSettings): string {
   if (!border.visible) return 'none'
   const { r, g, b } = hexToRgb(border.color)
-  const t = border.thickness
-  const solid = `inset 0 0 0 ${t + 1}px rgba(${r}, ${g}, ${b}, 0.9)`
-  if (!border.glow) return solid
-  const glowSpread = Math.round(t * 6)
-  const glowBlur = Math.round(t * 17)
-  return `${solid}, inset 0 0 ${glowBlur}px ${glowSpread}px rgba(${r}, ${g}, ${b}, 0.45)`
+  const g1 = GLOW_MAP[border.glow]
+  // Pulse peaks: slightly thicker border + amplified glow
+  const solid = `inset 0 0 0 4px rgba(${r}, ${g}, ${b}, ${Math.min(1, g1.solidA + 0.15)})`
+  if (g1.glowA === 0) return solid
+  const peakBlur = Math.round(g1.blur * 1.4)
+  const peakSpread = Math.round(g1.spread * 1.3)
+  const peakAlpha = Math.min(0.65, g1.glowA + 0.12)
+  return `${solid}, inset 0 0 ${peakBlur}px ${peakSpread}px rgba(${r}, ${g}, ${b}, ${peakAlpha})`
 }
 
 export default function App(): React.ReactElement {
@@ -64,15 +86,18 @@ export default function App(): React.ReactElement {
       document.head.appendChild(el)
     }
     if (!border.visible) {
-      el.textContent = '.focus-border-dynamic { box-shadow: none !important; animation: none !important; }'
+      el.textContent =
+        '.focus-border-dynamic { box-shadow: none !important; animation: none !important; }'
       return
     }
     const base = buildBorderShadow(border)
     const pulse = buildPulseShadow(border)
+    const duration = PULSE_MAP[border.pulse]
+    const hasPulse = duration > 0
     el.textContent = `
       .focus-border-dynamic {
         box-shadow: ${base};
-        ${border.glow ? `animation: focus-glow-dynamic 3.5s ease-in-out infinite;` : 'animation: none;'}
+        ${hasPulse ? `animation: focus-glow-dynamic ${duration}s ease-in-out infinite;` : 'animation: none;'}
       }
       @keyframes focus-glow-dynamic {
         0%, 100% { box-shadow: ${base}; }

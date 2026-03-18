@@ -26,18 +26,21 @@ export interface BlockSuggestion {
   apps?: BlockedApp[]
 }
 
+export type GlowLevel = 'none' | 'subtle' | 'soft' | 'medium' | 'bright' | 'intense'
+export type PulseLevel = 'static' | 'slow' | 'calm' | 'lively' | 'fast'
+
 export interface BorderSettings {
   visible: boolean
-  color: string       // hex color, e.g. '#5082dc'
-  glowIntensity: number // 0–100, 0 = no glow (solid line only)
-  pulseSpeed: number    // 0–100, 0 = static, 100 = fast pulse
+  color: string // hex color, e.g. '#5082dc'
+  glow: GlowLevel
+  pulse: PulseLevel
 }
 
 export const DEFAULT_BORDER: BorderSettings = {
   visible: true,
   color: '#5082dc',
-  glowIntensity: 60,
-  pulseSpeed: 50
+  glow: 'soft',
+  pulse: 'calm'
 }
 
 export interface StartSessionPayload {

@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import type { SetupAPI, BlockSuggestion, BlockedApp, BorderSettings } from '../../shared/types'
+import type {
+  SetupAPI,
+  BlockSuggestion,
+  BlockedApp,
+  BorderSettings,
+  GlowLevel,
+  PulseLevel
+} from '../../shared/types'
 import { DEFAULT_BORDER } from '../../shared/types'
 
 const api = (): SetupAPI => (window as unknown as { electronAPI: SetupAPI }).electronAPI
@@ -25,14 +32,41 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   }
 }
 
+const GLOW_OPTIONS: { value: GlowLevel; label: string }[] = [
+  { value: 'none', label: 'None' },
+  { value: 'subtle', label: 'Subtle' },
+  { value: 'soft', label: 'Soft' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'bright', label: 'Bright' },
+  { value: 'intense', label: 'Intense' }
+]
+
+const PULSE_OPTIONS: { value: PulseLevel; label: string }[] = [
+  { value: 'static', label: 'Static' },
+  { value: 'slow', label: 'Slow' },
+  { value: 'calm', label: 'Calm' },
+  { value: 'lively', label: 'Lively' },
+  { value: 'fast', label: 'Fast' }
+]
+
+const GLOW_PREVIEW: Record<
+  GlowLevel,
+  { blur: number; spread: number; solidA: number; glowA: number }
+> = {
+  none: { blur: 0, spread: 0, solidA: 0.6, glowA: 0 },
+  subtle: { blur: 20, spread: 6, solidA: 0.6, glowA: 0.12 },
+  soft: { blur: 35, spread: 12, solidA: 0.7, glowA: 0.25 },
+  medium: { blur: 45, spread: 16, solidA: 0.75, glowA: 0.32 },
+  bright: { blur: 55, spread: 20, solidA: 0.8, glowA: 0.4 },
+  intense: { blur: 70, spread: 26, solidA: 0.85, glowA: 0.5 }
+}
+
 function buildPreviewShadow(border: BorderSettings): string {
   const { r, g, b } = hexToRgb(border.color)
-  const t = border.thickness
-  const solid = `inset 0 0 0 ${t}px rgba(${r}, ${g}, ${b}, 0.75)`
-  if (!border.glow) return solid
-  const glowSpread = Math.round(t * 4.5)
-  const glowBlur = Math.round(t * 13)
-  return `${solid}, inset 0 0 ${glowBlur}px ${glowSpread}px rgba(${r}, ${g}, ${b}, 0.35)`
+  const g1 = GLOW_PREVIEW[border.glow]
+  const solid = `inset 0 0 0 3px rgba(${r}, ${g}, ${b}, ${g1.solidA})`
+  if (g1.glowA === 0) return solid
+  return `${solid}, inset 0 0 ${g1.blur}px ${g1.spread}px rgba(${r}, ${g}, ${b}, ${g1.glowA})`
 }
 
 interface SelectedItem {
@@ -250,10 +284,10 @@ export default function App(): React.ReactElement {
 
         {/* Focus Border */}
         <div style={styles.formRow}>
-          <label style={styles.formLabel}>Border</label>
+          <label style={{ ...styles.formLabel, paddingTop: 0 }}>Border</label>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {/* Visible toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Visible toggle — on same line as label */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 20 }}>
               <button
                 style={{
                   ...styles.toggle,
@@ -334,56 +368,42 @@ export default function App(): React.ReactElement {
                   </div>
                 </div>
 
-                {/* Thickness slider */}
+                {/* Glow level */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 12, color: c.textSecondary, minWidth: 60 }}>
-                    Thickness
-                  </span>
-                  <input
-                    type="range"
-                    min={1}
-                    max={8}
-                    step={1}
-                    value={border.thickness}
-                    onChange={(e) =>
-                      setBorder((b) => ({ ...b, thickness: Number(e.target.value) }))
-                    }
-                    style={{
-                      flex: 1,
-                      accentColor: border.color,
-                      cursor: 'pointer',
-                      height: 4
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: 12,
-                      color: c.textTertiary,
-                      minWidth: 24,
-                      textAlign: 'right'
-                    }}
-                  >
-                    {border.thickness}px
-                  </span>
+                  <span style={{ fontSize: 12, color: c.textSecondary, minWidth: 38 }}>Glow</span>
+                  <div style={styles.pillGroup}>
+                    {GLOW_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        style={{
+                          ...styles.pill,
+                          ...(border.glow === opt.value ? styles.pillActive : {})
+                        }}
+                        onClick={() => setBorder((b) => ({ ...b, glow: opt.value }))}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Glow toggle */}
+                {/* Pulse speed */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <button
-                    style={{
-                      ...styles.toggle,
-                      ...(border.glow ? styles.toggleOn : {})
-                    }}
-                    onClick={() => setBorder((b) => ({ ...b, glow: !b.glow }))}
-                  >
-                    <div
-                      style={{
-                        ...styles.toggleKnob,
-                        ...(border.glow ? styles.toggleKnobOn : {})
-                      }}
-                    />
-                  </button>
-                  <span style={{ fontSize: 13, color: c.textSecondary }}>Glow effect</span>
+                  <span style={{ fontSize: 12, color: c.textSecondary, minWidth: 38 }}>Pulse</span>
+                  <div style={styles.pillGroup}>
+                    {PULSE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        style={{
+                          ...styles.pill,
+                          ...(border.pulse === opt.value ? styles.pillActive : {})
+                        }}
+                        onClick={() => setBorder((b) => ({ ...b, pulse: opt.value }))}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Live preview */}
@@ -761,5 +781,33 @@ const styles: Record<string, React.CSSProperties> = {
 
   toggleKnobOn: {
     left: 18
+  },
+
+  pillGroup: {
+    display: 'flex',
+    gap: 0,
+    borderRadius: 6,
+    overflow: 'hidden',
+    border: `1px solid ${c.surfaceBorder}`,
+    background: c.surface
+  },
+
+  pill: {
+    padding: '4px 10px',
+    border: 'none',
+    background: 'transparent',
+    color: c.textSecondary,
+    fontSize: 11,
+    fontFamily: 'inherit',
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    whiteSpace: 'nowrap' as const
+  },
+
+  pillActive: {
+    background: '#515154',
+    color: c.text,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
   }
 }
