@@ -456,6 +456,15 @@ export default function App(): React.ReactElement {
           onClick={handleStart}
           disabled={!goal.trim()}
         >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6, flexShrink: 0 }}>
+            <circle cx="8" cy="8" r="6.8" fill="none" stroke="currentColor" strokeWidth="1.2"/>
+            <circle cx="8" cy="8" r="4.2" fill="none" stroke="currentColor" strokeWidth="0.9"/>
+            <circle cx="8" cy="8" r="1.7" fill="currentColor"/>
+            <line x1="1" y1="8" x2="3" y2="8" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round"/>
+            <line x1="13" y1="8" x2="15" y2="8" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round"/>
+            <line x1="8" y1="1" x2="8" y2="3" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round"/>
+            <line x1="8" y1="13" x2="8" y2="15" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round"/>
+          </svg>
           Start Focus Session
         </button>
         <div style={styles.shortcutHint}>
@@ -712,6 +721,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
 
   startBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
     padding: '7px 20px',
     borderRadius: 6,
     border: 'none',
