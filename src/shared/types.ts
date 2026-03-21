@@ -1,3 +1,4 @@
+// IPC channel constants for communication between main and renderer processes
 export const IPC = {
   START_SESSION: 'session:start',
   STOP_SESSION: 'session:stop',
