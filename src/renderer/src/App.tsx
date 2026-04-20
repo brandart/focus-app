@@ -4,6 +4,8 @@ import electronLogo from './assets/electron.svg'
 function App(): React.JSX.Element {
   const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
 
+  // test comment
+
   return (
     <>
       <img alt="logo" className="logo" src={electronLogo} />
